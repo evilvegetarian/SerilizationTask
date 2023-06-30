@@ -53,18 +53,22 @@ namespace SerilizationTask.Application.Services
             try
             {
                 var stat = personRepository.GetStatistic();
-                logger.LogInformation("Successfully calculated statistics: {Statistics}.", stat);
+                if (stat.PersonCount == 0) // check if the default value returned
+                {
+                    logger.LogInformation("The list is empty, no statistics to show.");
+                }
+                else
+                {
+                    logger.LogInformation("Successfully calculated statistics: {Statistics}.", stat);
+                }
                 return stat;
             }
-            catch (InvalidOperationException nre)
-            {
-                logger.LogError("Failed to get statistics because the person list was null: {ExceptionMessage}", nre.Message);
-                throw;
-            }
+
             catch (Exception ex)
             {
                 logger.LogError("Failed to get statistics due to an unexpected error: {ExceptionMessage}", ex.Message);
                 throw;
+
             }
         }
 

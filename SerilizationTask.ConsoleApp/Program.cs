@@ -44,8 +44,8 @@ public class Program
                     break;
                 case "2":
                     var stat = personService.GetStatisticDisplay();
-                    logger.LogInformation($"Person count:         {stat.PersonCount} \n" +
-                                          $"Average children age: {stat.AverageChildAge} \n" +
+                    logger.LogInformation($"\nPerson count:         {stat.PersonCount} \n" +
+                                          $"Average children age: {stat.AverageChildAge.ToString("0")} \n" +
                                           $"CreditCard Count:     {stat.CreditCardCount} \n");
                     break;
                 case "3":
@@ -59,6 +59,7 @@ public class Program
                     catch (Exception e)
                     {
                         logger.LogError($"Failed to serialize due to: {e.Message}");
+
                     }
                     break;
                 case "4":

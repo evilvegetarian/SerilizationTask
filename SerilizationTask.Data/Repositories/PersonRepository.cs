@@ -21,6 +21,9 @@ namespace SerilizationTask.Data.Repositories
 
         private Person RandomPerson(int id)
         {
+            var age = random.Next(18, 70);
+            var birthDate = new DateTimeOffset(DateTime.UtcNow.AddYears(-age)).ToUnixTimeSeconds();
+
             var person = new Person
             {
                 Id = id,
@@ -28,36 +31,71 @@ namespace SerilizationTask.Data.Repositories
                 FirstName = $"FirstName{id}",
                 LastName = $"LastName{id}",
                 SequenceId = random.Next(1, 10000),
-                Age = random.Next(18, 70),
-                Phones = new[] { $"+1-555-{id:0000}" },
-                BirthDate = new DateTimeOffset(DateTime.UtcNow.AddYears(-random.Next(18, 70))).ToUnixTimeSeconds(),
+                Age = age,
+                Phones = GeneratePhones(id),
+                BirthDate = birthDate,
                 Salary = random.NextDouble() * 100000,
                 IsMarred = random.NextDouble() > 0.5,
-                Gender = (Gender)(id % 2)
+                Gender = (Gender)(id % 2),
+                CreditCardNumbers = GenerateCreditCards(),
+                Children = GenerateChildren(id)
             };
-
-            var cardsCount = random.Next(0, 5);
-            person.CreditCardNumbers = new string[cardsCount];
-            person.Children = new Child[cardsCount];
-            for (int i = 0; i < cardsCount; i++)
-            {
-                person.CreditCardNumbers[i] = $"4532{random.Next(1000000000, 2000000000)}:0000";
-
-                person.Children[i] = new Child
-                {
-                    Id = id,
-                    FirstName = $"ChildFirstName{id}",
-                    LastName = $"ChildLastName{id}",
-                    BirthDate = new DateTimeOffset(DateTime.UtcNow.AddYears(-random.Next(1, 18))).ToUnixTimeSeconds(),
-                    Gender = (Gender)(id % 2)
-                };
-            }
 
             return person;
         }
 
+        private string[] GeneratePhones(int id)
+        {
+            var phonsCount = random.Next(1, 3);
+            var phone = new string[phonsCount];
+            for (int i = 0; i < phonsCount; i++)
+            {
+                phone[i] = $"+1-555-{random.Next(10000,99999)}";
+            }
+            return phone;
+        }
+
+        private string[] GenerateCreditCards()
+        {
+            var cardsCount = random.Next(0, 5);
+            var creditCards = new string[cardsCount];
+
+            for (int i = 0; i < cardsCount; i++)
+            {
+                creditCards[i] = $"4532{random.Next(1000000000, 2000000000)}:0000";
+            }
+
+            return creditCards;
+        }
+
+        private Child[] GenerateChildren(int id)
+        {
+            var childrenCount = random.Next(0, 4);
+            var children = new Child[childrenCount];
+
+            for (int i = 0; i < childrenCount; i++)
+            {
+                var childAge = random.Next(1, 18);
+                var childBirthDate = new DateTimeOffset(DateTime.UtcNow.AddYears(-childAge)).ToUnixTimeSeconds();
+
+                children[i] = new Child
+                {
+                    Id = id,
+                    FirstName = $"ChildFirstName{id}",
+                    LastName = $"ChildLastName{id}",
+                    BirthDate = childBirthDate,
+                    Gender = (Gender)(id % 2)
+                };
+            }
+
+            return children;
+        }
+
+
+
         public void GeneratePersons(int count)
         {
+            Clear();
             for (int i = 0; i < count; i++)
             {
                 people.Add(RandomPerson(i));
@@ -66,6 +104,11 @@ namespace SerilizationTask.Data.Repositories
 
         public StatisticDisplay GetStatistic()
         {
+            if (!people.Any())
+            {
+                return new StatisticDisplay(); 
+            }
+
             int personCount = people.Count();
             int creditCardCount = people.Sum(p => p.CreditCardNumbers.Length);
             double averageChildAge = people.SelectMany(x => x.Children)
